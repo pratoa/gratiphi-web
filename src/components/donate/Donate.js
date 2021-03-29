@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Amplify, { API, graphqlOperation } from "aws-amplify";
 import awsconfig from "../../aws-exports";
-import { createPaymentIntent } from "./../../graphql/queries";
+import {
+  createPaymentIntent,
+  createDonations,
+} from "./../../graphql/mutations";
+import * as queries from "./../../graphql/queries";
 
 import "./Donate.css";
 import {
@@ -11,6 +15,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { useParams } from "react-router-dom";
 
 Amplify.configure({
   ...awsconfig,
@@ -19,23 +24,50 @@ Amplify.configure({
   },
 });
 
+const SUCCEEDED = "succeeded";
 const stripePromise = loadStripe(
   "pk_test_51ILbpBAx0O8AnxyhqXwQmvrIZP1ezIMumif9m5h2nBLjWi7zPk1G13WLBIxHwgjezITExWfmNl34FHEB0ssxMJ8F00JZKz8auA"
 );
 
 function Donate() {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [selectedDonee, setSelectedDonee] = useState(null);
+
+  const params = useParams();
+
+  useEffect(() => {
+    async function getUser() {
+      const response = await API.graphql(
+        graphqlOperation(queries.getUser, { id: params.userId })
+      );
+      const user = await response.data.getUser;
+      setCurrentUser(user);
+    }
+    async function getSelectedDonee() {
+      const response = await API.graphql(
+        graphqlOperation(queries.getDonee, { id: params.doneeId })
+      );
+      const donee = await response.data.getDonee;
+      setSelectedDonee(donee);
+    }
+
+    getUser();
+    getSelectedDonee();
+  }, []);
+
   return (
     <Elements stripe={stripePromise}>
-      <CheckoutForm />
+      <CheckoutForm currentUser={currentUser} selectedDonee={selectedDonee} />
     </Elements>
   );
 }
 
-function CheckoutForm() {
+function CheckoutForm(props) {
   const [isPaymentLoading, setPaymentLoading] = useState(false);
   const stripe = useStripe();
   const elements = useElements();
 
+  const amount = 1500;
   const donate = async (e) => {
     e.preventDefault();
     if (!stripe || !elements) {
@@ -44,7 +76,11 @@ function CheckoutForm() {
     setPaymentLoading(true);
 
     const clientSecret = await API.graphql(
-      graphqlOperation(createPaymentIntent)
+      graphqlOperation(createPaymentIntent, {
+        email: props.currentUser.email,
+        userId: props.currentUser.id,
+        amount: amount,
+      })
     );
     console.log(clientSecret);
 
@@ -55,7 +91,7 @@ function CheckoutForm() {
           card: elements.getElement(CardElement),
           billing_details: {
             name: "Andres Prato",
-            email: "prato.andres@gmail.com",
+            email: props.currentUser.email,
           },
         },
       }
@@ -65,7 +101,14 @@ function CheckoutForm() {
     if (paymentResult.error) {
       alert(paymentResult.error.message);
     } else {
-      if (paymentResult.paymentIntent.status === "succeeded") {
+      if (paymentResult.paymentIntent.status === SUCCEEDED) {
+        const donation = await API.graphql(
+          graphqlOperation(createDonations, {
+            email: props.currentUser.email,
+            userId: props.currentUser.id,
+            amount: amount,
+          })
+        );
         alert("Success!");
       }
     }
@@ -97,6 +140,13 @@ function CheckoutForm() {
               alignItems: "center",
             }}
           >
+            <h3>{props.selectedDonee && props.selectedDonee.firstName}</h3>
+            <img
+              src={props.selectedDonee && props.selectedDonee.profilePhoto}
+              className="donee-image"
+              alt="Donee"
+            ></img>
+
             <CardElement
               className="card"
               options={{
