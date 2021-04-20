@@ -64,10 +64,14 @@ function Donate() {
 
 function CheckoutForm(props) {
   const [isPaymentLoading, setPaymentLoading] = useState(false);
+  const [amountToDonate, setAmountToDonate] = useState(500);
+  const [isOtherChecked, setIsOtherChecked] = useState(false);
+  const [isSavingCard, setIsSavingCard] = useState(false);
+
   const stripe = useStripe();
   const elements = useElements();
 
-  const amount = 1500;
+  //click donate button
   const donate = async (e) => {
     e.preventDefault();
     if (!stripe || !elements) {
@@ -75,49 +79,67 @@ function CheckoutForm(props) {
     }
     setPaymentLoading(true);
 
-    const clientSecret = await API.graphql(
-      graphqlOperation(createPaymentIntent, {
-        email: props.currentUser.email,
-        userId: props.currentUser.id,
-        amount: amount,
-      })
-    );
-    console.log(clientSecret);
-
-    const paymentResult = await stripe.confirmCardPayment(
-      clientSecret.data.createPaymentIntent,
-      {
-        payment_method: {
-          card: elements.getElement(CardElement),
-          billing_details: {
-            name: "Andres Prato",
-            email: props.currentUser.email,
+    try {
+      const clientSecret = await API.graphql(
+        graphqlOperation(createPaymentIntent, {
+          email: props.currentUser.email,
+          userId: props.currentUser.id,
+          amount: amountToDonate,
+        })
+      );
+      console.log(clientSecret);
+      const paymentResult = await stripe.confirmCardPayment(
+        clientSecret.data.createPaymentIntent,
+        {
+          payment_method: {
+            card: elements.getElement(CardElement),
+            billing_details: {
+              name: "Andres Prato",
+              email: props.currentUser.email,
+            },
           },
-        },
-      }
-    );
+          setup_future_usage: isSavingCard ? "off_session" : ""
+        }
+      );
+      console.log(paymentResult);
+      setPaymentLoading(false);
 
-    setPaymentLoading(false);
-    if (paymentResult.error) {
-      alert(paymentResult.error.message);
-    } else {
-      if (paymentResult.paymentIntent.status === SUCCEEDED) {
-        const donation = await API.graphql(
-          graphqlOperation(createDonations, {
-            email: props.currentUser.email,
-            userId: props.currentUser.id,
-            amount: amount,
-          })
-        );
-        alert("Success!");
+      if (paymentResult.error) {
+        alert(paymentResult.error.message);
+      } else {
+        if (paymentResult.paymentIntent.status === SUCCEEDED) {
+          const donation = await API.graphql(
+            graphqlOperation(createDonations, {
+              input: {
+                userId: props.currentUser.id,
+                doneeId: props.selectedDonee.id,
+                amount: amountToDonate,
+                isGratificationSent: false,
+                gratificationPhoto: null,
+              },
+            })
+          );
+          alert("Success!");
+        }
       }
+    } catch (err) {
+      console.log(err);
     }
+  };
+
+  let handleDefinedAmountClick = (e) => {
+    setIsOtherChecked(false);
+    setAmountToDonate(e.target.value * 100);
+  };
+
+  let handleOtherCheck = (e) => {
+    setIsOtherChecked(true);
   };
 
   return (
     <div
       style={{
-        padding: "3rem",
+        padding: "2.5rem",
       }}
     >
       <div
@@ -147,18 +169,77 @@ function CheckoutForm(props) {
               alt="Donee"
             ></img>
 
+            <div className="amount-container">
+              <input
+                type="radio"
+                id="a3"
+                name="amount"
+                value="3"
+                onChange={handleDefinedAmountClick}
+              />
+              <label className="fixed-amount" htmlFor="a3">$3</label>
+
+              <input
+                type="radio"
+                id="a5"
+                name="amount"
+                value="5"
+                onChange={handleDefinedAmountClick}
+                defaultChecked
+              />
+              <label className="fixed-amount" htmlFor="a5">$5</label>
+
+              <input
+                type="radio"
+                id="a10"
+                name="amount"
+                value="10"
+                onChange={handleDefinedAmountClick}
+              />
+              <label className="fixed-amount" htmlFor="a10">$10</label>
+
+              <input
+                type="radio"
+                id="a20"
+                name="amount"
+                value="20"
+                onChange={handleDefinedAmountClick}
+              />
+              <label className="fixed-amount" htmlFor="a20">$20</label>
+
+              <div className="break"></div>
+              {!isOtherChecked && (
+                <input
+                  type="radio"
+                  id="other"
+                  name="amount"
+                  value={isOtherChecked}
+                  onClick={handleOtherCheck}
+                />
+              )}
+              {!isOtherChecked && <label htmlFor="other">Other amount</label>}
+              {/* {isOtherChecked && (
+                <div className="other-amount-wrapper">
+                  <span className="currency-code">$</span>
+                  <input type="number" id="other" name="otherAmount" />
+                </div>
+              )}  */}
+            </div>
+
             <CardElement
               className="card"
               options={{
                 style: {
                   base: {
                     backgroundColor: "white",
+                    fontSize: "16px",
+                    width: "70%",
                   },
                 },
               }}
             />
             <button className="pay-button" disabled={isPaymentLoading}>
-              {isPaymentLoading ? "Loading..." : "Pay"}
+              {isPaymentLoading ? "Processing..." : "Donate"}
             </button>
           </div>
         </form>
