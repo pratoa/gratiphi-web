@@ -74,9 +74,29 @@ function CheckoutForm(props) {
   //click donate button
   const donate = async (e) => {
     e.preventDefault();
+    const cardElementContainer = document.querySelector("#card");
+
+    let cardElementComplete = cardElementContainer.classList.contains(
+      "StripeElement--complete"
+    );
+
+    if (!cardElementComplete) {
+      console.log(amountToDonate);
+      alert("Please complete your payment information.");
+      return;
+    }
+
     if (!stripe || !elements) {
       return;
     }
+
+    if (isOtherChecked) {
+      if (amountToDonate == null) {
+        alert("Please enter or select an amount to donate.");
+        return;
+      }
+    }
+
     setPaymentLoading(true);
 
     try {
@@ -98,7 +118,7 @@ function CheckoutForm(props) {
               email: props.currentUser.email,
             },
           },
-          setup_future_usage: isSavingCard ? "off_session" : ""
+          setup_future_usage: isSavingCard ? "off_session" : "",
         }
       );
       console.log(paymentResult);
@@ -106,6 +126,7 @@ function CheckoutForm(props) {
 
       if (paymentResult.error) {
         alert(paymentResult.error.message);
+        setPaymentLoading(false);
       } else {
         if (paymentResult.paymentIntent.status === SUCCEEDED) {
           const donation = await API.graphql(
@@ -124,6 +145,7 @@ function CheckoutForm(props) {
       }
     } catch (err) {
       console.log(err);
+      setPaymentLoading(false);
     }
   };
 
@@ -132,8 +154,13 @@ function CheckoutForm(props) {
     setAmountToDonate(e.target.value * 100);
   };
 
+  let handleOtherAmount = (e) => {
+    setAmountToDonate(e.target.value * 100);
+  };
+
   let handleOtherCheck = (e) => {
     setIsOtherChecked(true);
+    setAmountToDonate(null);
   };
 
   return (
@@ -177,7 +204,9 @@ function CheckoutForm(props) {
                 value="3"
                 onChange={handleDefinedAmountClick}
               />
-              <label className="fixed-amount" htmlFor="a3">$3</label>
+              <label className="fixed-amount" htmlFor="a3">
+                $3
+              </label>
 
               <input
                 type="radio"
@@ -187,7 +216,9 @@ function CheckoutForm(props) {
                 onChange={handleDefinedAmountClick}
                 defaultChecked
               />
-              <label className="fixed-amount" htmlFor="a5">$5</label>
+              <label className="fixed-amount" htmlFor="a5">
+                $5
+              </label>
 
               <input
                 type="radio"
@@ -196,7 +227,9 @@ function CheckoutForm(props) {
                 value="10"
                 onChange={handleDefinedAmountClick}
               />
-              <label className="fixed-amount" htmlFor="a10">$10</label>
+              <label className="fixed-amount" htmlFor="a10">
+                $10
+              </label>
 
               <input
                 type="radio"
@@ -205,7 +238,9 @@ function CheckoutForm(props) {
                 value="20"
                 onChange={handleDefinedAmountClick}
               />
-              <label className="fixed-amount" htmlFor="a20">$20</label>
+              <label className="fixed-amount" htmlFor="a20">
+                $20
+              </label>
 
               <div className="break"></div>
               {!isOtherChecked && (
@@ -218,16 +253,22 @@ function CheckoutForm(props) {
                 />
               )}
               {!isOtherChecked && <label htmlFor="other">Other amount</label>}
-              {/* {isOtherChecked && (
+              {isOtherChecked && (
                 <div className="other-amount-wrapper">
                   <span className="currency-code">$</span>
-                  <input type="number" id="other" name="otherAmount" />
+                  <input
+                    type="number"
+                    id="other"
+                    name="otherAmount"
+                    onChange={handleOtherAmount}
+                  />
                 </div>
-              )}  */}
+              )}
             </div>
 
             <CardElement
               className="card"
+              id="card"
               options={{
                 style: {
                   base: {
