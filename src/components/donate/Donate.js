@@ -3,9 +3,10 @@ import Amplify, { API, graphqlOperation } from "aws-amplify";
 import awsconfig from "../../aws-exports";
 import {
   createPaymentIntent,
-  createDonations,
-} from "./../../graphql/mutations";
-import * as queries from "./../../graphql/queries";
+  createDonation,
+} from "./../../graphql/customQueries/mutations";
+// import * as queries from "./../../graphql/queries";
+import * as queries from "../../graphql/customQueries/queries";
 
 import "./Donate.css";
 import {
@@ -41,6 +42,9 @@ function Donate() {
         graphqlOperation(queries.getUser, { id: params.userId })
       );
       const user = await response.data.getUser;
+      if (!user) {
+        alert("User doesn't exist");
+      }
       setCurrentUser(user);
     }
     async function getSelectedDonee() {
@@ -121,7 +125,7 @@ function CheckoutForm(props) {
           setup_future_usage: isSavingCard ? "off_session" : "",
         }
       );
-      console.log(paymentResult);
+      console.log("Payment result: ", paymentResult);
       setPaymentLoading(false);
 
       if (paymentResult.error) {
@@ -130,13 +134,14 @@ function CheckoutForm(props) {
       } else {
         if (paymentResult.paymentIntent.status === SUCCEEDED) {
           const donation = await API.graphql(
-            graphqlOperation(createDonations, {
+            graphqlOperation(createDonation, {
               input: {
                 userId: props.currentUser.id,
                 doneeId: props.selectedDonee.id,
+                locationId: props.selectedDonee.locationId,
+                stripeTransactionId: paymentResult.paymentIntent.id,
                 amount: amountToDonate,
-                isGratificationSent: false,
-                gratificationPhoto: null,
+                gratificationId: "NONE"
               },
             })
           );
