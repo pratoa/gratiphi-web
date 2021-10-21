@@ -49,15 +49,17 @@ function Donate() {
     }
     async function getSelectedDonee() {
       const response = await API.graphql(
-        graphqlOperation(queries.getDonee, { id: params.doneeId })
+        graphqlOperation(queries.retrieveDonee, { doneeId: params.doneeId })
       );
-      const donee = await response.data.getDonee;
+      console.log("", response.data.retrieveDonee.id);
+      const donee = JSON.parse(await response.data.retrieveDonee);
+      console.log("DONEE: ", donee);
       setSelectedDonee(donee);
     }
 
     getUser();
     getSelectedDonee();
-  }, []);
+  }, [params.doneeId, params.userId]);
 
   return (
     <Elements stripe={stripePromise}>
@@ -141,7 +143,7 @@ function CheckoutForm(props) {
                 locationId: props.selectedDonee.locationId,
                 stripeTransactionId: paymentResult.paymentIntent.id,
                 amount: amountToDonate,
-                gratificationId: "NONE"
+                gratificationId: "NONE",
               },
             })
           );
@@ -196,7 +198,7 @@ function CheckoutForm(props) {
           >
             <h3>{props.selectedDonee && props.selectedDonee.firstName}</h3>
             <img
-              src={props.selectedDonee && props.selectedDonee.profilePhoto}
+              src={props.selectedDonee && props.selectedDonee.profilePhotoUrl}
               className="donee-image"
               alt="Donee"
             ></img>

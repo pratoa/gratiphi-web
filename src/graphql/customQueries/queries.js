@@ -100,3 +100,9 @@ export const listDonationss = /* GraphQL */ `
     }
   }
 `;
+
+export const retrieveDonee = /* GraphQL */ `
+  query RetrieveDonee($doneeId: String) {
+    retrieveDonee(doneeId: $doneeId)
+  }
+`;
