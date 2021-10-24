@@ -58,7 +58,7 @@ function Donate() {
     }
 
     getUser();
-    getSelectedDonee();
+    // getSelectedDonee();
   }, [params.doneeId, params.userId]);
 
   return (
