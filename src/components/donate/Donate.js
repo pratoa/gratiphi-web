@@ -5,7 +5,6 @@ import {
   createPaymentIntent,
   createDonation,
 } from "./../../graphql/customQueries/mutations";
-// import * as queries from "./../../graphql/queries";
 import * as queries from "../../graphql/customQueries/queries";
 
 import "./Donate.css";
@@ -58,12 +57,12 @@ function Donate() {
     }
 
     getUser();
-    // getSelectedDonee();
+    getSelectedDonee();
   }, [params.doneeId, params.userId]);
 
   return (
     <Elements stripe={stripePromise}>
-      <CheckoutForm currentUser={currentUser} selectedDonee={selectedDonee} />
+      {/* <CheckoutForm currentUser={currentUser} selectedDonee={selectedDonee} /> */}
     </Elements>
   );
 }
