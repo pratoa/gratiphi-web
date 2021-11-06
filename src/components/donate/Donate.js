@@ -62,7 +62,7 @@ function Donate() {
 
   return (
     <Elements stripe={stripePromise}>
-      {/* <CheckoutForm currentUser={currentUser} selectedDonee={selectedDonee} /> */}
+      <CheckoutForm currentUser={currentUser} selectedDonee={selectedDonee} />
     </Elements>
   );
 }
