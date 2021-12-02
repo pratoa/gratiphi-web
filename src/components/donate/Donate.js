@@ -50,9 +50,7 @@ function Donate() {
       const response = await API.graphql(
         graphqlOperation(queries.retrieveDonee, { doneeId: params.doneeId })
       );
-      console.log("", response.data.retrieveDonee.id);
       const donee = JSON.parse(await response.data.retrieveDonee);
-      console.log("DONEE: ", donee);
       setSelectedDonee(donee);
     }
 
@@ -119,7 +117,7 @@ function CheckoutForm(props) {
           payment_method: {
             card: elements.getElement(CardElement),
             billing_details: {
-              name: "Andres Prato",
+              name: `${props.currentUser.name} ${props.currentUser.lastName}`,
               email: props.currentUser.email,
             },
           },
@@ -139,18 +137,23 @@ function CheckoutForm(props) {
               input: {
                 userId: props.currentUser.id,
                 doneeId: props.selectedDonee.id,
-                locationId: props.selectedDonee.locationId,
+                locationId: props.selectedDonee.location.id,
                 stripeTransactionId: paymentResult.paymentIntent.id,
                 amount: amountToDonate,
                 gratificationId: "NONE",
               },
             })
           );
-          alert("Success!");
+          alert(
+            "Thanks for your donation! One step closer to eliminate hunger in Venezuela!"
+          );
+          // TO-DO: take user to thank you popup or new page.
+        } else {
+          //TO-DO: void stripe transaction
         }
       }
     } catch (err) {
-      console.log(err);
+      console.log("Error: ", err);
       setPaymentLoading(false);
     }
   };
@@ -202,7 +205,7 @@ function CheckoutForm(props) {
               alt="Donee"
             ></img>
 
-            <div className="amount-container">
+            <div className="amount-container" disabled={isPaymentLoading}>
               <input
                 type="radio"
                 id="a3"
@@ -264,7 +267,7 @@ function CheckoutForm(props) {
                   <span className="currency-code">$</span>
                   <input
                     type="number"
-                    id="other"
+                    id="other-input"
                     name="otherAmount"
                     onChange={handleOtherAmount}
                   />

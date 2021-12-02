@@ -1,5 +1,8 @@
 @media screen and (max-width: 767px) {
-  .card, input, select, textarea {
+  .card,
+  input,
+  select,
+  textarea {
     font-size: 16px !important;
   }
 }
@@ -103,6 +106,7 @@
   top: 10px;
   color: #fff;
   z-index: 1;
+  font-size: 18px;
 }
 
 [type="number"] {
@@ -115,6 +119,7 @@
   color: #fff;
   width: 100%;
   box-sizing: border-box;
+  font-size: 18px;
 }
 
 .break {
