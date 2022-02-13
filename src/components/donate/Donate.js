@@ -29,7 +29,7 @@ const stripePromise = loadStripe(
   "pk_test_51ILbpBAx0O8AnxyhqXwQmvrIZP1ezIMumif9m5h2nBLjWi7zPk1G13WLBIxHwgjezITExWfmNl34FHEB0ssxMJ8F00JZKz8auA"
 );
 
-function Donate() {
+export default function Donate(props) {
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedDonee, setSelectedDonee] = useState(null);
 
@@ -60,7 +60,11 @@ function Donate() {
 
   return (
     <Elements stripe={stripePromise}>
-      <CheckoutForm currentUser={currentUser} selectedDonee={selectedDonee} />
+      <CheckoutForm
+        history={props.history}
+        currentUser={currentUser}
+        selectedDonee={selectedDonee}
+      />
     </Elements>
   );
 }
@@ -144,10 +148,7 @@ function CheckoutForm(props) {
               },
             })
           );
-          alert(
-            "Thanks for your donation! One step closer to eliminate hunger in Venezuela!"
-          );
-          // TO-DO: take user to thank you popup or new page.
+          props.history.push("/thank-you");
         } else {
           //TO-DO: void stripe transaction
         }
@@ -297,5 +298,3 @@ function CheckoutForm(props) {
     </div>
   );
 }
-
-export default Donate;
