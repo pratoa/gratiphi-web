@@ -4,6 +4,7 @@ import awsconfig from "../../aws-exports";
 import {
   createPaymentIntent,
   createDonation,
+  processDonation,
 } from "./../../graphql/customQueries/mutations";
 import * as queries from "../../graphql/customQueries/queries";
 
@@ -41,6 +42,7 @@ export default function Donate(props) {
         graphqlOperation(queries.getUser, { id: params.userId })
       );
       const user = await response.data.getUser;
+      console.log(user);
       if (!user) {
         alert("User doesn't exist");
       }
@@ -74,7 +76,6 @@ function CheckoutForm(props) {
   const [amountToDonate, setAmountToDonate] = useState(500);
   const [isOtherChecked, setIsOtherChecked] = useState(false);
   const [isSavingCard, setIsSavingCard] = useState(false);
-
   const stripe = useStripe();
   const elements = useElements();
 
@@ -88,7 +89,6 @@ function CheckoutForm(props) {
     );
 
     if (!cardElementComplete) {
-      console.log(amountToDonate);
       alert("Please complete your payment information.");
       return;
     }
@@ -114,7 +114,6 @@ function CheckoutForm(props) {
           amount: amountToDonate,
         })
       );
-      console.log(clientSecret);
       const paymentResult = await stripe.confirmCardPayment(
         clientSecret.data.createPaymentIntent,
         {
@@ -128,7 +127,6 @@ function CheckoutForm(props) {
           setup_future_usage: isSavingCard ? "off_session" : "",
         }
       );
-      console.log("Payment result: ", paymentResult);
       setPaymentLoading(false);
 
       if (paymentResult.error) {
@@ -148,6 +146,15 @@ function CheckoutForm(props) {
               },
             })
           );
+          const donationProcessed = await API.graphql(
+            graphqlOperation(processDonation, {
+              doneeName: props.selectedDonee.firstName,
+              userFirstName: props.currentUser.name,
+              userEmail: props.currentUser.email,
+              amount: amountToDonate,
+            })
+          );
+          console.log(donationProcessed);
           props.history.push("/thank-you");
         } else {
           //TO-DO: void stripe transaction

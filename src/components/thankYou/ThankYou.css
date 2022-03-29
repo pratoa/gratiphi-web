@@ -6,11 +6,15 @@
   top: 0px;
   height: 100px;
   width: 100%;
+  display: flex;
   background-color: rgb(40, 79, 150);
+  align-items: center;
+  justify-items: center;
 }
 
 .logo {
-  height: 250px;
+  object-fit: contain;
+  height: 50%;
 }
 
 .medium-text {

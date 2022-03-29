@@ -8,6 +8,22 @@ export const createPaymentIntent = /* GraphQL */ `
   }
 `;
 
+export const processDonation = /* GraphQL */ `
+  mutation ProcessDonation(
+    $doneeName: String
+    $userFirstName: String
+    $userEmail: String
+    $amount: Float
+  ) {
+    processDonation(
+      doneeName: $doneeName
+      userFirstName: $userFirstName
+      userEmail: $userEmail
+      amount: $amount
+    )
+  }
+`;
+
 export const createDonation = /* GraphQL */ `
   mutation CreateDonation(
     $input: CreateDonationInput!

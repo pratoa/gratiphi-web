@@ -1,14 +1,18 @@
-import logo from "../../images/gratiphi-logo.png";
 import "./ThankYou.css";
 
 export default function ThankYou() {
   return (
     <div className="thank-you">
-      <header className="header"></header>
-      <body>
-        <div className="medium-text">Thank you!</div>
-        <img src={logo} className="logo" alt="logo" />
-      </body>
+      <header className="header">
+        <img
+          src="https://gratification-proof114704-dev.s3.amazonaws.com/public/resources/gratiphi-logo.png"
+          className="logo"
+          alt="logo"
+        />
+      </header>
+      <div>
+        <h2>Thank you!</h2>
+      </div>
     </div>
   );
 }
