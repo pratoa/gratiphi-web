@@ -218,45 +218,45 @@ function CheckoutForm(props) {
                 type="radio"
                 id="a3"
                 name="amount"
-                value="3"
+                value="2.7"
                 onChange={handleDefinedAmountClick}
               />
               <label className="fixed-amount" htmlFor="a3">
-                $3
+                3 meals <br></br>($2.70)
               </label>
 
               <input
                 type="radio"
                 id="a5"
                 name="amount"
-                value="5"
+                value="4.5"
                 onChange={handleDefinedAmountClick}
                 defaultChecked
               />
               <label className="fixed-amount" htmlFor="a5">
-                $5
+                5 meals <br></br>($4.50)
               </label>
 
               <input
                 type="radio"
                 id="a10"
                 name="amount"
-                value="10"
+                value="9"
                 onChange={handleDefinedAmountClick}
               />
               <label className="fixed-amount" htmlFor="a10">
-                $10
+                10 meals <br></br>($9.00)
               </label>
 
               <input
                 type="radio"
                 id="a20"
                 name="amount"
-                value="20"
+                value="18"
                 onChange={handleDefinedAmountClick}
               />
               <label className="fixed-amount" htmlFor="a20">
-                $20
+                20 meals <br></br>($18.00)
               </label>
 
               <div className="break"></div>
